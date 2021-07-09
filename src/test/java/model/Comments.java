@@ -1,8 +1,10 @@
 package model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 
+/**
+ * Model class to hold the Comments json response
+ */
 @Data
 public class Comments {
     private int postId;

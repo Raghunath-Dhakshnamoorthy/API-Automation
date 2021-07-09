@@ -1,22 +1,19 @@
 package stepDefinition;
 
 import api.JSONPlaceholderApi;
-import com.google.gson.Gson;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import io.restassured.response.Response;
+import lombok.extern.slf4j.Slf4j;
 import model.Comments;
 import model.Posts;
 import net.serenitybdd.core.Serenity;
 import net.thucydides.core.annotations.Steps;
-import org.jruby.RubyProcess;
 import org.junit.Assert;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class StepDefinitions {
@@ -32,7 +29,7 @@ public class StepDefinitions {
     public void iShouldRetrieveTheUserDetails() {
         final Response userResponse = Serenity.sessionVariableCalled("userResponse");
         final String userId = userResponse.then().extract().path("id").toString();
-        Serenity.setSessionVariable("userId").to(userId.substring(1, userId.length()-1));
+        Serenity.setSessionVariable("userId").to(userId.substring(1, userId.length() - 1));
     }
 
     @When("I retrieve the posts written by the user")
@@ -57,11 +54,11 @@ public class StepDefinitions {
     @Then("I should validate emails in the comment are in proper format")
     public void iShouldValidateEmailsInTheCommentAreInProperFormat() {
         Map<String, List<Comments>> commentsMap = Serenity.sessionVariableCalled("commentsMap");
+        //Retrieve all emailIds to a single list
         List<String> emailList = commentsMap.entrySet().stream()
                 .flatMap(entry -> entry.getValue().stream()
                         .map(Comments::getEmail)).collect(Collectors.toList());
-        System.out.println("Email list size: \n" +emailList.size());
-        for (String email: emailList) {
+        for (String email : emailList) {
             boolean isEmailValid = JSONPlaceholderApi.validateEmailAddress(email);
             Assert.assertTrue("Email address is invalid: ", isEmailValid);
         }
