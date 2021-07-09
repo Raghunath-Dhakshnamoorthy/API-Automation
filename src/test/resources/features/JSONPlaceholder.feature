@@ -10,5 +10,4 @@ Feature: Validate email address in comments
 
   Scenario: Retrieve the comments and validate email's format
     When I retrieve the comments for each post
-    Then I should retrieve the comments
-    And I validate emails in the comment are in proper format
+    Then I should validate emails in the comment are in proper format
