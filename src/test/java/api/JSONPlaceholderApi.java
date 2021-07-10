@@ -2,7 +2,6 @@ package api;
 
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import lombok.extern.slf4j.Slf4j;
 import model.Comments;
 import model.Posts;
 import net.serenitybdd.core.Serenity;
@@ -23,7 +22,7 @@ public class JSONPlaceholderApi {
      * Method to retrieve user response for given user name
      *
      * @param userName
-     *         username
+     *         the user name
      * @return {@link Response} the users response
      */
     @Step
@@ -42,18 +41,39 @@ public class JSONPlaceholderApi {
     /**
      * Method to retrieve the posts written by an user
      *
+     * @param userId
+     *         the user id
      * @return {@link Response} the posts response
      */
     @Step
-    public Response getPostsWrittenByUser() {
-        final String userId = Serenity.sessionVariableCalled("userId");
+    public Response getPostsWrittenByUser(final String userId) {
         return RestAssured.given()
                 .baseUri(baseUrl)
                 .basePath("posts")
                 .queryParam("userId", userId)
                 .when().log().all()
                 .get()
-                .then().extract().response();
+                .then()
+                .statusCode(200)
+                .extract().response();
+    }
+
+    /**
+     * Method to retrieve the comments for a post
+     *
+     * @param postId
+     *         the post id
+     * @return {@link Response} the posts response
+     */
+    public Response getCommentsFromPost(final String postId) {
+        return RestAssured.given()
+                .queryParam("postId", postId)
+                .when().log().all()
+                //To Highlight: We can also give url in get()
+                .get(baseUrl + "comments")
+                .then()
+                .statusCode(200)
+                .extract().response();
     }
 
     /**
@@ -62,25 +82,34 @@ public class JSONPlaceholderApi {
      * @return the map which contains comments in each post
      */
     @Step
-    public Map<String, List<Comments>> getCommentsFromPost() {
+    public Map<String, List<Comments>> getAllCommentsForEachPost() {
         final Map<String, List<Comments>> commentsMap = new HashMap<>();
         final List<Posts> postList = Serenity.sessionVariableCalled("postList");
         //Iterate through each post and retrieve the Comments
         for (final Posts post : postList) {
-            String postId = String.valueOf(post.getId());
-            final Comments[] commentsArray =
-                    RestAssured.given()
-                            .queryParam("postId", postId)
-                            .when().log().all()
-                            //To Highlight: We can also give url in get()
-                            .get(baseUrl + "comments")
-                            .then()
-                            .statusCode(200)
-                            .extract().as(Comments[].class);
+            final String postId = String.valueOf(post.getId());
+            final Comments[] commentsArray = getCommentsFromPost(postId)
+                    .then().extract().as(Comments[].class);
             //Add the Comments for each post to a map
             commentsMap.put(postId, Arrays.asList(commentsArray));
         }
         return commentsMap;
+    }
+
+    /**
+     * Method to retrieve response when invalid resource name is given
+     *
+     * @param invalidResource
+     *         the invalid resource name
+     * @return {@link Response} the response
+     */
+    public Response getInvalidResourceResponse(final String invalidResource) {
+        return RestAssured.given()
+                .baseUri(baseUrl)
+                .basePath(invalidResource)
+                .when().log().all()
+                .get()
+                .then().extract().response();
     }
 
     /**

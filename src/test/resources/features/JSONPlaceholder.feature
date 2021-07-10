@@ -1,6 +1,6 @@
 Feature: Validate email address in comments
 
-  Scenario: Search for Delphine in JSONPlaceholder API
+  Scenario: Search for Delphine
     When I search for the user with username "Delphine"
     Then I should retrieve the user details
 
@@ -11,3 +11,7 @@ Feature: Validate email address in comments
   Scenario: Retrieve the comments and validate email's format
     When I retrieve the comments for each post
     Then I should validate emails in the comment are in proper format
+
+  Scenario: Resource unavailable error
+    When an user tries to retrieve the "resource" which is not available
+    Then resource unavailable error should be thrown
