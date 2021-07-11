@@ -3,7 +3,7 @@
 
 This test automation solution covers the following test scenario.
 
-### Flow to be tested
+### Test Scenarios (as per the requirement)
 
 1. Search for the user with username “Delphine”.
 2. Use the details fetched to make a search for the posts written by the
@@ -15,7 +15,7 @@ comment section are in the proper format.
 
 #### Considerations
 
-As mentioned in test flow, only **users**, **posts** and **comments** resources of JSONPlaceholder API alone considered for this automation
+As mentioned in scenarios, only **users**, **posts** and **comments** resources of JSONPlaceholder API alone considered for this automation
 
 ### Framework Implementation
 
@@ -65,4 +65,8 @@ Clone the repository from GitHub using https://github.com/Raghunath-Dhakshnamoor
  
 Then, run `mvn clean install` from the command line to execute all the feature files.
 
-Once the test execution is completed, the test report will be available in `target/site/serenity/index.html`.
+Once the test execution is completed, the test report will be available in `target/site/serenity/index.html`
+
+#### Keyword - To Highlight
+
+I have used the keyword **To Highlight** in many comments which was intended to highlight my different opinions/views in approaching solution
