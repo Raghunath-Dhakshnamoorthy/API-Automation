@@ -26,8 +26,16 @@ jobs:
           when: always
       - store_test_results:
           path: ~/test-results/junit
+#      - store_artifacts:
+#          path: ~/test-results/junit
+      - run:
+          name: Save serenity report
+          command: |
+            mkdir -p ~/test-results/serenity/
+            find . -name serenity-summary.html -exec cp {} ~/test-results/serenity/ \;
+          when: always
       - store_artifacts:
-          path: ~/test-results/junit
+          path: ~/test-results/serenity
 
 workflows:
   commit:
