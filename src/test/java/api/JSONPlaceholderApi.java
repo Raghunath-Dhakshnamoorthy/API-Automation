@@ -1,7 +1,9 @@
 package api;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.restassured.RestAssured;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import model.Comments;
 import model.Posts;
 import net.serenitybdd.core.Serenity;
@@ -23,10 +25,10 @@ public class JSONPlaceholderApi {
      *
      * @param userName
      *         the user name
-     * @return {@link Response} the users response
+     * @return {@link ValidatableResponse} the users response
      */
     @Step
-    public Response getUserByUserName(final String userName) {
+    public ValidatableResponse getUserByUserName(final String userName) {
         return RestAssured.given()
                 .baseUri(baseUrl)
                 .basePath("users")
@@ -34,8 +36,7 @@ public class JSONPlaceholderApi {
                 .when().log().all()
                 .get()
                 .then()
-                .statusCode(200)
-                .extract().response();
+                .statusCode(200);
     }
 
     /**
@@ -43,10 +44,10 @@ public class JSONPlaceholderApi {
      *
      * @param userId
      *         the user id
-     * @return {@link Response} the posts response
+     * @return {@link ValidatableResponse} the posts response
      */
     @Step
-    public Response getPostsWrittenByUser(final String userId) {
+    public ValidatableResponse getPostsWrittenByUser(final String userId) {
         return RestAssured.given()
                 .baseUri(baseUrl)
                 .basePath("posts")
@@ -54,8 +55,7 @@ public class JSONPlaceholderApi {
                 .when().log().all()
                 .get()
                 .then()
-                .statusCode(200)
-                .extract().response();
+                .statusCode(200);
     }
 
     /**
@@ -63,17 +63,18 @@ public class JSONPlaceholderApi {
      *
      * @param postId
      *         the post id
-     * @return {@link Response} the posts response
+     * @return {@link ValidatableResponse} the posts response
      */
-    public Response getCommentsFromPost(final String postId) {
+    @Step
+    public ValidatableResponse getCommentsFromPost(final String postId) {
         return RestAssured.given()
+                .baseUri(baseUrl)
+                .basePath("comments")
                 .queryParam("postId", postId)
                 .when().log().all()
-                //To Highlight: We can also give url in get()
-                .get(baseUrl + "comments")
+                .get()
                 .then()
-                .statusCode(200)
-                .extract().response();
+                .statusCode(200);
     }
 
     /**
@@ -89,7 +90,7 @@ public class JSONPlaceholderApi {
         for (final Posts post : postList) {
             final String postId = String.valueOf(post.getId());
             final Comments[] commentsArray = getCommentsFromPost(postId)
-                    .then().extract().as(Comments[].class);
+                    .extract().as(Comments[].class);
             //Add the Comments for each post to a map
             commentsMap.put(postId, Arrays.asList(commentsArray));
         }
@@ -101,15 +102,16 @@ public class JSONPlaceholderApi {
      *
      * @param invalidResource
      *         the invalid resource name
-     * @return {@link Response} the response
+     * @return {@link ValidatableResponse} the response
      */
-    public Response getInvalidResourceResponse(final String invalidResource) {
+    @Step
+    public ValidatableResponse getInvalidResourceResponse(final String invalidResource) {
         return RestAssured.given()
                 .baseUri(baseUrl)
                 .basePath(invalidResource)
                 .when().log().all()
                 .get()
-                .then().extract().response();
+                .then();
     }
 
     /**
@@ -123,5 +125,51 @@ public class JSONPlaceholderApi {
         final Pattern validEmailRegex = Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
         final Matcher matcher = validEmailRegex.matcher(emailAddress);
         return matcher.find();
+    }
+
+    /**
+     * Method to create new post
+     *
+     * @return {@link ValidatableResponse} the posts response
+     */
+    @Step
+    public ValidatableResponse createNewPost() {
+        return RestAssured.given()
+                .baseUri(baseUrl)
+                .basePath("posts")
+                .header("Content-Type", "application/json; charset=UTF-8")
+                .body(setPostsData())
+                .when().log().all()
+                .post()
+                .then()
+                .statusCode(201);
+    }
+
+    /**
+     * Method to set data(json body) for create new post
+     *
+     * @return the json body data
+     */
+    private String setPostsData() {
+        final Posts posts = new Posts(1, 1, "Fake", "Response");
+        final Gson gsonBuilder = new GsonBuilder().create();
+        return gsonBuilder.toJson(posts);
+    }
+
+    /**
+     * Method to get post data by post id
+     *
+     * @param postId
+     *         the post id
+     * @return {@link ValidatableResponse} the posts response
+     */
+    @Step
+    public ValidatableResponse getPostByPostId(final String postId) {
+        return RestAssured.given()
+                .when().log().all()
+                //To Highlight: We can also give url as String in get()
+                .get(baseUrl + "posts" + "/" + postId)
+                .then();
+        //To Highlight: Didn't perform status code validation here to make it a generic method
     }
 }

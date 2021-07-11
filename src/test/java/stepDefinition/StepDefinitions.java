@@ -1,9 +1,10 @@
 package stepDefinition;
 
 import api.JSONPlaceholderApi;
+import io.cucumber.java.en.But;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.restassured.response.Response;
+import io.restassured.response.ValidatableResponse;
 import model.Comments;
 import model.Posts;
 import net.serenitybdd.core.Serenity;
@@ -27,8 +28,8 @@ public class StepDefinitions {
 
     @Then("I should retrieve the user details")
     public void iShouldRetrieveTheUserDetails() {
-        final Response userResponse = Serenity.sessionVariableCalled("userResponse");
-        final String userId = userResponse.then().extract().path("id").toString();
+        final ValidatableResponse userResponse = Serenity.sessionVariableCalled("userResponse");
+        final String userId = userResponse.extract().path("id").toString();
         Serenity.setSessionVariable("userId").to(userId.substring(1, userId.length() - 1));
     }
 
@@ -40,8 +41,9 @@ public class StepDefinitions {
 
     @Then("I should retrieve all the posts")
     public void iShouldRetrieveAllThePosts() {
-        final Response postResponse = Serenity.sessionVariableCalled("postResponse");
-        final List<Posts> postList = Arrays.asList(postResponse.then().extract().as(Posts[].class));
+        final ValidatableResponse postResponse = Serenity.sessionVariableCalled("postResponse");
+        //Store all posts written by an user to a list
+        final List<Posts> postList = Arrays.asList(postResponse.extract().as(Posts[].class));
         Serenity.setSessionVariable("postList").to(postList);
     }
 
@@ -76,7 +78,21 @@ public class StepDefinitions {
 
     @Then("resource unavailable error should be thrown")
     public void resourceUnavailableErrorShouldBeThrown() {
-        final Response invalidResourceResponse = Serenity.sessionVariableCalled("invalidResourceResponse");
-        Assert.assertEquals("Resource unavailable error was not thrown", 404, invalidResourceResponse.statusCode());
+        final ValidatableResponse invalidResourceResponse = Serenity.sessionVariableCalled("invalidResourceResponse");
+        Assert.assertEquals("Resource unavailable error was not thrown",
+                404, invalidResourceResponse.extract().statusCode());
+    }
+
+    @When("an user writes a new post and it should be created")
+    public void anUserWritesANewPostAndItShouldBeCreated() {
+        final Posts postData = JSONPlaceholderApi.createNewPost().extract().body().as(Posts.class);
+        Serenity.setSessionVariable("newPostId").to(postData.getId());
+    }
+
+    @But("the actual posts resource should not updated with new post")
+    public void theActualPostsResourceShouldNotUpdatedWithNewPost() {
+        final int newPostId = Serenity.sessionVariableCalled("newPostId");
+        final int postStatusCode = JSONPlaceholderApi.getPostByPostId(String.valueOf(newPostId)).extract().statusCode();
+        Assert.assertEquals("Fake response for posts not behaving as expected: ",404, postStatusCode);
     }
 }
