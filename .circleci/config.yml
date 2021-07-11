@@ -12,13 +12,13 @@ jobs:
 
 workflows:
   monthly:
-    triggers:
-      - schedule:
-          cron: "0 0 1 * *"
-          filters:
-            branches:
-              only:
-                - master
-                - validate-email-in-comments
+#    triggers:
+#      - schedule:
+#          cron: "0 0 1 * *"
+#          filters:
+#            branches:
+#              only:
+#                - master
+#                - validate-email-in-comments
     jobs:
       - test
