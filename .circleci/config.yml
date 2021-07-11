@@ -18,6 +18,7 @@ workflows:
           filters:
             branches:
               only:
-              ignore:
+                - master
+                - validate-email-in-comments
     jobs:
       - test
