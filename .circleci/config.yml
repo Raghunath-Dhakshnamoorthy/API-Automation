@@ -1,0 +1,53 @@
+version: 2.1
+
+jobs:
+  test:
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - maven-{{ checksum "pom.xml" }}
+            - maven-
+      - run: mvn -B -DskipTests clean package
+      - save_cache:
+          key: maven-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2
+      - run:
+          name: Test
+          command: mvn clean install
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+      - store_test_results:
+          path: ~/test-results/junit
+#      - store_artifacts:
+#          path: ~/test-results/junit
+      - run:
+          name: Save serenity report
+          command: |
+            mkdir -p ~/test-results/serenity/
+            find . -name serenity-summary.html -exec cp {} ~/test-results/serenity/ \;
+          when: always
+      - store_artifacts:
+          path: ~/test-results/serenity
+
+workflows:
+  commit:
+    jobs:
+      - test
+  monthly:
+    triggers:
+      - schedule:
+          cron: "0 0 1 * *"
+          filters:
+            branches:
+              only:
+                - master
+    jobs:
+      - test
