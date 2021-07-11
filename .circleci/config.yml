@@ -1,26 +1,5 @@
 version: 2.1
 
-#commands:
-#  restore_cache_cmd:
-#    steps:
-#      - restore_cache:
-#          keys:
-#            - maven-{{ checksum "pom.xml" }}
-#            - maven-
-#  save_cache_cmd:
-#    steps:
-#      - save_cache:
-#          key: maven-{{ checksum "pom.xml" }}
-#          paths:
-#            - ~/.m2
-#
-#  build:
-#    steps:
-#      - checkout
-#      - restore_cache_cmd
-#      - run: ./mvnw -Dmaven.test.skip=true package
-#      - save_cache_cmd
-
 jobs:
   test:
     docker:
@@ -45,10 +24,10 @@ jobs:
             mkdir -p ~/test-results/junit/
             find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
           when: always
-#            - store_test_results:
-#                path: ~/test-results/junit
-            - store_artifacts:
-                path: ~/test-results/junit
+      - store_test_results:
+          path: ~/test-results/junit
+      - store_artifacts:
+          path: ~/test-results/junit
 
 workflows:
   commit:
