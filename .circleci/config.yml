@@ -1,5 +1,26 @@
 version: 2.1
 
+commands:
+  restore_cache_cmd:
+    steps:
+      - restore_cache:
+          keys:
+            - m2-{{ checksum "pom.xml" }}
+            - m2-
+  save_cache_cmd:
+    steps:
+      - save_cache:
+          paths:
+            - ~/.m2
+            key: m2-{{ checksum "pom.xml" }}
+
+  build:
+    steps:
+      - checkout
+      - restore_cache_cmd
+      - run: ./mvnw -Dmaven.test.skip=true package
+      - save_cache_cmd
+
 jobs:
   test:
     docker:
@@ -9,16 +30,28 @@ jobs:
       - run:
           name: Test
           command: mvn clean install
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p ~/test-results/junit/
+            find . -type f -regex ".*/target/surefire-reports/.*xml" -exec cp {} ~/test-results/junit/ \;
+          when: always
+            - store_test_results:
+                path: ~/test-results/junit
+            - store_artifacts:
+                path: ~/test-results/junit
 
 workflows:
+  commit:
+    jobs:
+      - test
   monthly:
-#    triggers:
-#      - schedule:
-#          cron: "0 0 1 * *"
-#          filters:
-#            branches:
-#              only:
-#                - master
-#                - validate-email-in-comments
+    triggers:
+      - schedule:
+          cron: "0 0 1 * *"
+          filters:
+            branches:
+              only:
+                - master
     jobs:
       - test
