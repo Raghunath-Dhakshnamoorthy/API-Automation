@@ -17,7 +17,7 @@ workflows:
           cron: "0 0 1 * *"
           filters:
             branches:
-#              only:
-#                - master
+              only:
+                ignore:
     jobs:
       - test
