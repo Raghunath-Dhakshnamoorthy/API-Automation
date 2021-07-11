@@ -1,25 +1,25 @@
 version: 2.1
 
-commands:
-  restore_cache_cmd:
-    steps:
-      - restore_cache:
-          keys:
-            - maven-{{ checksum "pom.xml" }}
-            - maven-
-  save_cache_cmd:
-    steps:
-      - save_cache:
-          paths:
-            - ~/.m2
-            key: maven-{{ checksum "pom.xml" }}
-
-  build:
-    steps:
-      - checkout
-      - restore_cache_cmd
-      - run: ./mvnw -Dmaven.test.skip=true package
-      - save_cache_cmd
+#commands:
+#  restore_cache_cmd:
+#    steps:
+#      - restore_cache:
+#          keys:
+#            - maven-{{ checksum "pom.xml" }}
+#            - maven-
+#  save_cache_cmd:
+#    steps:
+#      - save_cache:
+#          key: maven-{{ checksum "pom.xml" }}
+#          paths:
+#            - ~/.m2
+#
+#  build:
+#    steps:
+#      - checkout
+#      - restore_cache_cmd
+#      - run: ./mvnw -Dmaven.test.skip=true package
+#      - save_cache_cmd
 
 jobs:
   test:
@@ -27,6 +27,15 @@ jobs:
       - image: cimg/openjdk:11.0
     steps:
       - checkout
+      - restore_cache:
+          keys:
+            - maven-{{ checksum "pom.xml" }}
+            - maven-
+      - run: mvn -B -DskipTests clean package
+      - save_cache:
+          key: maven-{{ checksum "pom.xml" }}
+          paths:
+            - ~/.m2
       - run:
           name: Test
           command: mvn clean install
